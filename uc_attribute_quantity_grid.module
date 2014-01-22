@@ -1,5 +1,7 @@
 <?php
-
+/**
+ * Implements hook_form_alter() 
+ */
 function uc_attribute_quantity_grid_form_alter(&$form, &$form_state, $form_id) {
   if ($form_id == 'uc_order_attributes_form') {
     //$form['#attached']['js'][] = drupal_get_path('module', 'uc_attribute_quantity_grid') . '/js/uc_attribute_quantity_grid.js';
@@ -29,6 +31,9 @@ function uc_attribute_quantity_grid_form_alter(&$form, &$form_state, $form_id) {
   }
 }
 
+/**
+ * Implements hook_page_alter() 
+ */
 function uc_attribute_quantity_grid_page_alter(&$page) {
   if (preg_match('/admin\/store\/products\/attributes/', $_SERVER['REQUEST_URI'], $matches)) {
     if (isset($page['content']['system_main']['attributes']['#rows'])) {
@@ -41,11 +46,14 @@ function uc_attribute_quantity_grid_page_alter(&$page) {
   }
 }
 
+/**
+ * Implements hook_element_info() 
+ */
 function uc_attribute_quantity_grid_element_info() {
   $type['uc_attribute_quantity_grid'] = array(
     '#input' => TRUE,
     '#tree' => TRUE,
-    '#process' => array('uc_attribute_quantity_grid_expand' ),
+    '#process' => array('uc_attribute_quantity_grid_process' ),
     '#value_callback' => 'uc_attribute_quantity_grid_value_callback',
     '#theme' => 'uc_attribute_quantity_grid'
   );
@@ -64,7 +72,10 @@ function uc_attribute_quantity_grid_theme() {
   );
 }
 
-function uc_attribute_quantity_grid_expand($element, &$form_state, $complete_form) {
+/**
+ * Callback of #process attribute of uc_attribute_quantity_grid_element_info() 
+ */
+function uc_attribute_quantity_grid_process($element, &$form_state, $complete_form) {
   $aid = str_replace('edit-attributes-', '', $element['#id']);
   $element['#tree'] = TRUE;
   $element['#grid'] = $element['#options'];
@@ -94,6 +105,7 @@ function uc_attribute_quantity_grid_expand($element, &$form_state, $complete_for
             ->fetchObject();
           $nid = $order_product->nid;
         }
+
         $product_option = db_select('uc_product_options', 'po')
           ->fields('po')
           ->condition('nid', $nid)
@@ -116,10 +128,12 @@ function uc_attribute_quantity_grid_expand($element, &$form_state, $complete_for
       }
     }
   }
-
   return $element;
 }
 
+/**
+ * Callback of #value_callback attribute of uc_attribute_quantity_grid_element_info() 
+ */
 function uc_attribute_quantity_grid_value_callback($element, $input = FALSE, &$form_state) {
   if ($input !== FALSE) {
     // Process $input
@@ -129,12 +143,18 @@ function uc_attribute_quantity_grid_value_callback($element, $input = FALSE, &$f
   return;
 }
 
+/**
+ * Implements theme_hook() 
+ */
 function theme_uc_attribute_quantity_grid($variables) {
   $element = $variables['element'];
   $output = theme('uc_attribute_quantity_grid_display', array('element'=>$element));
   return $output;
 }
 
+/**
+ * Implements hook_uc_order_product_alter() 
+ */
 function uc_attribute_quantity_grid_uc_order_product_alter(&$product, $order) {
   // Convert the attribute and option ids to their current names. This
   // preserves the important data in case the attributes or options are
@@ -160,6 +180,9 @@ function uc_attribute_quantity_grid_uc_order_product_alter(&$product, $order) {
   }
 }
 
+/**
+ * Implements hook_uc_product_description() 
+ */
 function uc_attribute_quantity_grid_uc_product_description($product) {
   $description = array(
     'attributes' => array(
