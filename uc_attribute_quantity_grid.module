@@ -1,55 +1,55 @@
 <?php
 
 function uc_attribute_quantity_grid_form_alter(&$form, &$form_state, $form_id) {
-	if ($form_id == 'uc_order_attributes_form') {
+  if ($form_id == 'uc_order_attributes_form') {
     //$form['#attached']['js'][] = drupal_get_path('module', 'uc_attribute_quantity_grid') . '/js/uc_attribute_quantity_grid.js';
-	}
-	
-	if ($form_id == 'uc_attribute_form') {
-		$form['display']['#options'][] = 'Quantity grid';
-	}
-	
-	if ($form_id == 'uc_object_attributes_form') {
-		if (isset($form['attributes'])) {
-			foreach ($form['attributes'] as $key => $attribute) {
-			  $form['attributes'][$key]['display']['#options'][] = 'Quantity grid';
-			}
-		}
-	}
-	
-	if (preg_match('/uc_product_add_to_cart_form/', $form_id, $matches)) {
-		if (isset($form['attributes'])) {
-			foreach (array_keys($form['attributes']) as $key) {
-				if (isset($form['attributes'][$key]['#type']) && $form['attributes'][$key]['#type'] == '') {
-					$form['attributes'][$key]['#type'] = 'uc_attribute_quantity_grid';
-					$form['attributes'][$key]['#default_value'] = '';
-				}
-			}
-		}
-	}
+  }
+
+  if ($form_id == 'uc_attribute_form') {
+    $form['display']['#options'][] = 'Quantity grid';
+  }
+
+  if ($form_id == 'uc_object_attributes_form') {
+    if (isset($form['attributes'])) {
+      foreach ($form['attributes'] as $key => $attribute) {
+        $form['attributes'][$key]['display']['#options'][] = 'Quantity grid';
+      }
+    }
+  }
+
+  if (preg_match('/uc_product_add_to_cart_form/', $form_id, $matches)) {
+    if (isset($form['attributes'])) {
+      foreach (array_keys($form['attributes']) as $key) {
+        if (isset($form['attributes'][$key]['#type']) && $form['attributes'][$key]['#type'] == '') {
+          $form['attributes'][$key]['#type'] = 'uc_attribute_quantity_grid';
+          $form['attributes'][$key]['#default_value'] = '';
+        }
+      }
+    }
+  }
 }
 
 function uc_attribute_quantity_grid_page_alter(&$page) {
-	if (preg_match('/admin\/store\/products\/attributes/', $_SERVER['REQUEST_URI'], $matches)) {
+  if (preg_match('/admin\/store\/products\/attributes/', $_SERVER['REQUEST_URI'], $matches)) {
     if (isset($page['content']['system_main']['attributes']['#rows'])) {
       foreach ($page['content']['system_main']['attributes']['#rows'] as &$attribute) {
-      	if ($attribute[5] == '') { //3 means quantity grid type
-      		$attribute[5] = 'Quantity grid';
-      	}
+        if ($attribute[5] == '') { //3 means quantity grid type
+          $attribute[5] = 'Quantity grid';
+        }
       }
     }
-	}
+  }
 }
 
 function uc_attribute_quantity_grid_element_info() {
-   $type['uc_attribute_quantity_grid'] = array(
-     '#input' => TRUE,    
-     '#tree' => TRUE,
-     '#process' => array('uc_attribute_quantity_grid_expand' ),
-     '#value_callback' => 'uc_attribute_quantity_grid_value_callback',
-     '#theme' => 'uc_attribute_quantity_grid'
-   );
-   return $type;
+  $type['uc_attribute_quantity_grid'] = array(
+    '#input' => TRUE,
+    '#tree' => TRUE,
+    '#process' => array('uc_attribute_quantity_grid_expand' ),
+    '#value_callback' => 'uc_attribute_quantity_grid_value_callback',
+    '#theme' => 'uc_attribute_quantity_grid'
+  );
+  return $type;
 }
 
 /**
@@ -58,89 +58,85 @@ function uc_attribute_quantity_grid_element_info() {
 function uc_attribute_quantity_grid_theme() {
   return array(
     'uc_attribute_quantity_grid' => array(
-     'render element' => 'element',
-     'template' => 'uc_attribute_quantity_grid_display',
+    'render element' => 'element',
+    'template' => 'uc_attribute_quantity_grid_display',
     ),
   );
 }
 
 function uc_attribute_quantity_grid_expand($element, &$form_state, $complete_form) {
-   $aid = str_replace('edit-attributes-', '', $element['#id']);      
-   $element['#tree'] = TRUE;
-   $element['#grid'] = $element['#options'];
-   if (count($element['#grid']) > 0) {
-     foreach ($element['#grid'] as $key => $choice) {
-       if (!isset($element[$key])) {
-         if (isset($element['#default_value'][$key])) {
-           $default_value = $element['#default_value'][$key];
-         }
-         elseif (isset($form_state['values']['attributes'][$aid][$key])) {
-           $default_value = $form_state['values']['attributes'][$aid][$key];
-         }
-         else {
-           $default_value = 0;
-         }
-         if (isset($form_state['values']['nid'])) { //For First (Order) page
-           $nid = $form_state['values']['nid'];
-         }
-         elseif (isset($form_state['values']['items'][0]['nid'])) { //For second (cart) page
-           $nid = $form_state['values']['items'][0]['nid'];
-         }
-         elseif (isset($form_state['values']['order_product_id'])) { //For order edit page
-           
-           $order_product = db_select('uc_order_products', 'op')
+  $aid = str_replace('edit-attributes-', '', $element['#id']);
+  $element['#tree'] = TRUE;
+  $element['#grid'] = $element['#options'];
+  if (count($element['#grid']) > 0) {
+    foreach ($element['#grid'] as $key => $choice) {
+      if (!isset($element[$key])) {
+        if (isset($element['#default_value'][$key])) {
+          $default_value = $element['#default_value'][$key];
+        }
+        elseif (isset($form_state['values']['attributes'][$aid][$key])) {
+          $default_value = $form_state['values']['attributes'][$aid][$key];
+        }
+        else {
+          $default_value = 0;
+        }
+        if (isset($form_state['values']['nid'])) { //For First (Order) page
+          $nid = $form_state['values']['nid'];
+        }
+        elseif (isset($form_state['values']['items'][0]['nid'])) { //For second (cart) page
+          $nid = $form_state['values']['items'][0]['nid'];
+        }
+        elseif (isset($form_state['values']['order_product_id'])) { //For order edit page
+          $order_product = db_select('uc_order_products', 'op')
             ->fields('op')
             ->condition('order_product_id', $form_state['values']['order_product_id'])
             ->execute()
             ->fetchObject();
-            
-           $nid = $order_product->nid;
-         }
-         
-         $product_option = db_select('uc_product_options', 'po')
-            ->fields('po')
-            ->condition('nid', $nid)
-            ->condition('oid', $key)
-            ->execute()
-            ->fetchObject();
-            
-         $element[$key] = array(
-           '#type' => 'select',
-           '#title' => $choice,
-           '#attributes' => array_merge($element['#attributes'], array('unit_price' => $product_option->price, 'autocomplete' => 'off') ),
-           '#ajax' => isset($element['#ajax']) ? $element['#ajax'] : NULL,
-           '#name' => $element['#name'].'['.$key.']',   
-           '#id' => $element['#id'].'-'.$key,
-           '#options' => array(0 => '0', 1 => '1', 2 => '2', 3 => '3', 4 => '4', 5 => '5', 6 => '6', 7 => '7', 8 => '8', 9 => '9', 10 => '10', ),
-         );
-         if ($default_value) {
-           $element[$key]['#default_value'] = $default_value;
-         }         
-       }
-     }
-   }
+          $nid = $order_product->nid;
+        }
+        $product_option = db_select('uc_product_options', 'po')
+          ->fields('po')
+          ->condition('nid', $nid)
+          ->condition('oid', $key)
+          ->execute()
+          ->fetchObject();
 
-   return $element;
- }
- 
- function uc_attribute_quantity_grid_value_callback($element, $input = FALSE, &$form_state) {
+        $element[$key] = array(
+          '#type' => 'select',
+          '#title' => $choice,
+          '#attributes' => array_merge($element['#attributes'], array('unit_price' => $product_option->price, 'autocomplete' => 'off') ),
+          '#ajax' => isset($element['#ajax']) ? $element['#ajax'] : NULL,
+          '#name' => $element['#name'].'['.$key.']',
+          '#id' => $element['#id'].'-'.$key,
+          '#options' => array(0 => '0', 1 => '1', 2 => '2', 3 => '3', 4 => '4', 5 => '5', 6 => '6', 7 => '7', 8 => '8', 9 => '9', 10 => '10', ),
+        );
+        if ($default_value) {
+          $element[$key]['#default_value'] = $default_value;
+        }
+      }
+    }
+  }
+
+  return $element;
+}
+
+function uc_attribute_quantity_grid_value_callback($element, $input = FALSE, &$form_state) {
   if ($input !== FALSE) {
     // Process $input
   } elseif (!empty($element['#default_value'])) {
     return $element['#default_value'];
   }
- 
   return;
 }
 
- function theme_uc_attribute_quantity_grid($variables) {
-   $element = $variables['element']; 
-   $output = theme('uc_attribute_quantity_grid_display', array('element'=>$element));
-   return $output;
- }
- 
- function uc_attribute_quantity_grid_uc_order_product_alter(&$product, $order) {
- // Convert the attribute and option ids to their current names. This
+function theme_uc_attribute_quantity_grid($variables) {
+  $element = $variables['element'];
+  $output = theme('uc_attribute_quantity_grid_display', array('element'=>$element));
+  return $output;
+}
+
+function uc_attribute_quantity_grid_uc_order_product_alter(&$product, $order) {
+  // Convert the attribute and option ids to their current names. This
   // preserves the important data in case the attributes or options are
   // changed later.
   if (!empty($product->data['attributes'])) {
@@ -161,13 +157,11 @@ function uc_attribute_quantity_grid_expand($element, &$form_state, $complete_for
       }
       $product->data['attributes'] = $attributes;
     }
-  }	
- }
- 
- 
- function uc_attribute_quantity_grid_uc_product_description($product) {
- 	
- 	$description = array(
+  }
+}
+
+function uc_attribute_quantity_grid_uc_product_description($product) {
+  $description = array(
     'attributes' => array(
       '#product' => array(
         '#type' => 'value',
@@ -203,14 +197,14 @@ function uc_attribute_quantity_grid_expand($element, &$form_state, $complete_for
           $desc[$option['aid']]['#options'][] = $option['name'];
         }
         elseif($option['quantity'] != 0) {
-          $desc[$option['aid']]['#options'][] = $option['name'].' (x '.$option['quantity'].')';          
+          $desc[$option['aid']]['#options'][] = $option['name'].' (x '.$option['quantity'].')';
         }
       }
       $desc[$option['aid']]['#weight'] = $weight++;
     }
   }
   elseif (isset($product->data['attributes'])) {
-    foreach ($product->data['attributes'] as $attribute => $option) {                 
+    foreach ($product->data['attributes'] as $attribute => $option) {
       $desc[] = array(
         '#attribute_name' => $attribute,
         '#options' => $option,
@@ -219,4 +213,4 @@ function uc_attribute_quantity_grid_expand($element, &$form_state, $complete_for
     }
   }
   return $description;
- }
+}

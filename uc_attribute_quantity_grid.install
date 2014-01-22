@@ -1,4 +1,4 @@
 <?php
 function uc_attribute_quantity_grid_install() {
-}
 
+}
